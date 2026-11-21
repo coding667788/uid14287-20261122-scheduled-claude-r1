@@ -1,0 +1,50 @@
+{
+  "case_id": "demo-reconstruct",
+  "media_id": "FICTIONAL-DISK-001",
+  "blocks": [
+    {"id": "B0", "initial_digest": "h0", "initial_source": "FACTORY:B0"},
+    {"id": "B1", "initial_digest": "h1", "initial_source": "FACTORY:B1"},
+    {"id": "B2", "initial_digest": "h2", "initial_source": "FACTORY:B2"},
+    {"id": "B3", "initial_digest": "h3", "initial_source": "FACTORY:B3"}
+  ],
+  "collectors": [
+    {"id": "C1", "trust_marker": "MARK-C1-7F3A"},
+    {"id": "C2", "trust_marker": "MARK-C2-9B21"},
+    {"id": "C3", "trust_marker": "MARK-C3-1D8E"}
+  ],
+  "transactions": [
+    {"id": "T1", "collector": "C1", "local_seq": 0, "causal_after": [],
+     "actor": "ACT-ALPHA", "writes": [
+       {"block": "B0", "digest": "h0-a"}, {"block": "B1", "digest": "h1-a"}]},
+    {"id": "T2", "collector": "C1", "local_seq": 1, "causal_after": ["T1"],
+     "actor": "ACT-BETA", "writes": [{"block": "B0", "digest": "h0-b"}]},
+    {"id": "T3", "collector": "C2", "local_seq": 0, "causal_after": ["T1"],
+     "actor": "ACT-GAMMA", "writes": [{"block": "B2", "digest": "h2-a"}]},
+    {"id": "T4", "collector": "C2", "local_seq": 1, "causal_after": ["T3", "T2"],
+     "actor": "ACT-GAMMA", "writes": [{"block": "B0", "digest": "h0-a"}]},
+    {"id": "T5", "collector": "C3", "local_seq": 0, "causal_after": ["T2", "T3"],
+     "actor": "ACT-DELTA", "writes": [
+       {"block": "B1", "digest": "h1-b"}, {"block": "B3", "digest": "h3-a"}]},
+    {"id": "T6", "collector": "C3", "local_seq": 1, "causal_after": ["T5"],
+     "actor": "ACT-DELTA", "writes": [{"block": "B2", "digest": "h2"}]}
+  ],
+  "shards": [
+    {"id": "S1", "collector": "C1", "revocable": true,
+     "barriers": {"must_include": ["T1"], "must_exclude": []},
+     "observations": [
+       {"block": "B0", "digest": "h0-a"}]},
+    {"id": "S2", "collector": "C2", "revocable": true,
+     "barriers": {"must_include": ["T3"], "must_exclude": []},
+     "observations": [
+       {"block": "B2", "digest": "h2-a"},
+       {"block": "B0", "digest": "h0-a"}]},
+    {"id": "S3", "collector": "C3", "revocable": false,
+     "barriers": {"must_include": ["T5"], "must_exclude": []},
+     "observations": [
+       {"block": "B3", "digest": "h3-a"},
+       {"block": "B1", "digest": "h1-b"}]},
+    {"id": "S4", "collector": "C1", "revocable": true,
+     "barriers": {"must_include": [], "must_exclude": ["T6"]},
+     "observations": [{"block": "B2", "digest": "h2-a"}]}
+  ]
+}

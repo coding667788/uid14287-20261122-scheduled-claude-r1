@@ -1,0 +1,40 @@
+{
+  "case_id": "demo-compare",
+  "media_id": "FICTIONAL-DISK-003",
+  "blocks": [
+    {"id": "BX", "initial_digest": "x0"},
+    {"id": "BY", "initial_digest": "y0"},
+    {"id": "BZ", "initial_digest": "z0"}
+  ],
+  "collectors": [
+    {"id": "C1", "trust_marker": "MARK-C1"},
+    {"id": "C2", "trust_marker": "MARK-C2"}
+  ],
+  "transactions": [
+    {"id": "T1", "collector": "C1", "local_seq": 0, "causal_after": [],
+     "actor": "ACT-ALPHA", "writes": [
+       {"block": "BX", "digest": "x1"}, {"block": "BZ", "digest": "z1"}]},
+    {"id": "T2", "collector": "C1", "local_seq": 1, "causal_after": ["T1"],
+     "actor": "ACT-BETA", "writes": [{"block": "BX", "digest": "x0"}]},
+    {"id": "T3", "collector": "C2", "local_seq": 0, "causal_after": ["T1"],
+     "actor": "ACT-GAMMA", "writes": [{"block": "BY", "digest": "y1"}]},
+    {"id": "T4", "collector": "C2", "local_seq": 1, "causal_after": ["T3"],
+     "actor": "ACT-DELTA", "writes": [{"block": "BY", "digest": "y0"}]}
+  ],
+  "shards": [
+    {"id": "S1", "collector": "C1", "revocable": true,
+     "barriers": {"must_include": ["T2"], "must_exclude": []},
+     "observations": [{"block": "BX", "digest": "x0"}]},
+    {"id": "S2", "collector": "C2", "revocable": true,
+     "barriers": {"must_include": ["T4"], "must_exclude": []},
+     "observations": [{"block": "BY", "digest": "y0"}]}
+  ],
+  "compare": {
+    "witness_blocks": ["BX", "BY"],
+    "slices": [
+      ["T1"],
+      ["T1", "T2", "T3", "T4"]
+    ],
+    "preservation": {"BX": "x0", "BY": "y0"}
+  }
+}

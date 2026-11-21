@@ -1,0 +1,46 @@
+{
+  "case_id": "demo-suspect",
+  "media_id": "FICTIONAL-DISK-004",
+  "blocks": [
+    {"id": "B0", "initial_digest": "h0"},
+    {"id": "B1", "initial_digest": "h1"},
+    {"id": "B2", "initial_digest": "h2"}
+  ],
+  "collectors": [
+    {"id": "C1", "trust_marker": "MARK-C1"},
+    {"id": "C2", "trust_marker": "MARK-C2"},
+    {"id": "C3", "trust_marker": "MARK-C3"},
+    {"id": "C4", "trust_marker": "MARK-C4"}
+  ],
+  "transactions": [
+    {"id": "T1", "collector": "C1", "local_seq": 0, "causal_after": [],
+     "actor": "ACT-ALPHA", "writes": [{"block": "B0", "digest": "h0-a"}]},
+    {"id": "T2", "collector": "C2", "local_seq": 0, "causal_after": ["T1"],
+     "actor": "ACT-BETA", "writes": [{"block": "B1", "digest": "h1-a"}]},
+    {"id": "T3", "collector": "C3", "local_seq": 0, "causal_after": ["T2"],
+     "actor": "ACT-GAMMA", "writes": [{"block": "B2", "digest": "h2-a"}]},
+    {"id": "T4", "collector": "C4", "local_seq": 0, "causal_after": ["T3"],
+     "actor": "ACT-DELTA", "writes": [{"block": "B0", "digest": "h0-b"}]}
+  ],
+  "shards": [
+    {"id": "S1", "collector": "C1", "revocable": true,
+     "barriers": {"must_include": ["T1"], "must_exclude": []},
+     "observations": [{"block": "B0", "digest": "h0-a"}]},
+    {"id": "S2", "collector": "C2", "revocable": true,
+     "barriers": {"must_include": ["T2"], "must_exclude": []},
+     "observations": [{"block": "B1", "digest": "h1-a"}]},
+    {"id": "S3", "collector": "C3", "revocable": true,
+     "barriers": {"must_include": ["T3"], "must_exclude": []},
+     "observations": [{"block": "B2", "digest": "h2-a"}]},
+    {"id": "S4", "collector": "C4", "revocable": true,
+     "barriers": {"must_include": ["T4"], "must_exclude": ["T2"]},
+     "observations": [{"block": "B0", "digest": "h0-b"}]},
+    {"id": "SF", "collector": "C1", "revocable": false,
+     "barriers": {"must_include": [], "must_exclude": ["T4"]},
+     "observations": [{"block": "B0", "digest": "h0-a"}]}
+  ],
+  "suspect": {
+    "isolation_costs": {"C1": 5, "C2": 1, "C3": 10, "C4": 2},
+    "fixed_evidence": ["SF"]
+  }
+}
